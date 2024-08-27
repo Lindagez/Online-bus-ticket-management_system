@@ -55,7 +55,7 @@ const registerUser = async (req, res, next) => {
     password: req.body.password,
   });
   try {
-    console.log(req.body);
+    // console.log(req.body);
     const { email, password } = req.body;
 
     // if (!emailPattern.test(email)) {
