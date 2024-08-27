@@ -229,7 +229,28 @@ const updateUserPassword = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
+// Search Users
+const searchUser = async (req, res) => {
+  const { query } = req.query;
+  
+  try {
+      // Search for users based on name, email, or other criteria
+      const users = await User.find({
+          $or: [
+              { name: { $regex: query, $options: 'i' } }, // case-insensitive search
+              { email: { $regex: query, $options: 'i' } }
+          ]
+      });
+      
+      if (users.length === 0) {
+          return res.status(404).json({ message: 'No users found' });
+      }
+      
+      res.status(200).json(users);
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+};
 // Delete a user
 
 const deleteUser = async (req, res) => {
@@ -253,6 +274,7 @@ const stat = (req, res) => {
 // Define routes
 router.post("/api/logout", logoutUser);
 router.get("/api/status", stat);
+router.get('/api/search/users', searchUser);
 router.post("/api/register", registerUser);
 router.post("/api/login", loginUser);
 router.get("/api/profile", auth, getUser);

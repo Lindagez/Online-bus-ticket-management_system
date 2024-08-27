@@ -1,180 +1,201 @@
-const express = require('express')
-const Ticket = require('../models/Ticket')
-const User = require('../models/user.model')
-const validation = require('../Middleware/validation/validation')
-const bcrypt = require('bcrypt')
-const userValidation = validation.userValidation
-const openTicket = validation.openTicket
+const express = require('express');
+const router = express.Router();
+const Ticket = require('../models/Ticket');
+const User = require('../models/user.model');
+const BusModel = require('../models/bus.model'); // Import the Bus model
+const validation = require('../Middleware/validation/validation');
+const bcrypt = require('bcrypt');
+const userValidation = validation.userValidation;
+const openTicket = validation.openTicket;
 
-const router = express.Router()
+// Define routes
 
-router.get('/test', (req, res) => {
-    return res.send("Hello word")
-})
+// Create a ticket and update the bus model
+router.post('/ticket', async (req, res) => {
+    try {
+        const [result, data] = userValidation(req.body.passenger);
+        if (!result) return res.status(404).json({ message: data });
 
-//create a ticket
-router.post('/ticket', (req, res) => {
+        const ticket = new Ticket({ seat_number: req.body.seat_number });
+        const user = new User(req.body.passenger);
 
-    let [result, data] = userValidation(req.body.passenger)
-    if (!result) return res.status(404).json({ message: data })
+        const savedUser = await user.save();
+        if (savedUser) {
+            ticket.passenger = savedUser._id;
+            const savedTicket = await ticket.save();
 
-    const ticket = new Ticket({ seat_number: req.body.seat_number })
-    const user = new User(req.body.passenger)
+            // Update the bus model
+            const ticketdata = req.body.ticketSummary.date +
+                "@" +
+                req.body.ticketSummary.ticket +
+                "@" +
+                req.body.userDetails.gender;
+            const filter = { _id: req.body.bus };
+            const update = { $push: { seats: ticketdata } };
+            await BusModel.findOneAndUpdate(filter, update);
 
-    user.save()
-        .then(data => {
-            if (data) {
-                ticket.passenger = user._id
-                ticket.save()
-                    .then(data => res.status(200).json(data))
-                    .catch(err => {
-                        User.findOneAndDelete({ _id: user._id })
-                            .then((data) => res.status(400))
-                            .catch(err => res.status(400).json({ message: err }))
-                    })
-            }
-        })
-        .catch(err => res.status(404).json({ message: err }))
-
-})
-
-//update a ticket, update open/closed and user_details
-router.put('/ticket/:ticket_id', (req, res) => {
-    //check indempotency for ticket booking status
-    const { ticket_id } = req.params
-    const payload = req.body
-    let passenger = null
-
-    if ('passenger' in payload) {
-        passenger = req.body.passenger
-    }
-
-    if (payload.is_booked == true) {
-        Ticket.findById(ticket_id, function (err, ticket) {
-            if (err) res.status(404).json({ message: err })
-            if (ticket) {
-                const user_id = ticket.passenger
-                User.remove({ _id: user_id }, function (err) {
-                    if (err) {
-                        res.status(404).json({ message: err })
-                    }
-                    else {
-                        ticket.is_booked = payload.is_booked
-                        ticket.save()
-                            .then(data => res.status(200).json(data))
-                            .catch(err => res.status(404).json(err))
-                    }
-                });
-            }
-        })
-    }
-
-    if (payload.is_booked == false && passenger != null) {
-        Ticket.findById(ticket_id, function (err, ticket) {
-            if (err) res.status(404).json({ message: err })
-            if (ticket) {
-                const user = new User(passenger)
-                user.save()
-                    .then(data => {
-                        ticket.passenger = data._id
-                        ticket.is_booked = payload.is_booked
-                        ticket.save()
-                            .then(data => res.status(200).json(data))
-                            .catch(err => res.status(404).json(err))
-                    })
-                    .catch(err => res.status(404).json({ message: err }))
-            }
-        })
-    }
-})
-
-// edit details of a user 
-router.put('/user/:ticket_id', (req, res) => {
-    const { ticket_id } = req.params
-    const payload = req.body
-
-    Ticket.findById(ticket_id, function (err, ticket) {
-        if (err) res.status(404).json({ message: err })
-        if (ticket) {
-            const user_id = ticket.passenger
-            User.findById(user_id)
-                .then(user => {
-                    if ('name' in payload) user.name = payload.name
-                    if ('sex' in payload) user.sex = payload.sex
-                    if ('email' in payload) user.email = payload.email
-                    if ('phone' in payload) user.phone = payload.phone
-                    if ('age' in payload) user.age = payload.age
-                    user.save()
-                        .then(data => res.status(202).json(data))
-                        .catch(err => res.status(404).json({ message: err }))
-                })
-                .catch(err => res.status(404).json({ message: err }))
+            res.status(200).json(savedTicket);
         }
-    })
-})
+    } catch (err) {
+        res.status(500).json({ message: "Internal server error!" });
+    }
+});
 
-// get the status of a ticket based on ticket_id
-router.get('/ticket/:ticket_id', (req, res) => {
-    const { ticket_id } = req.params
-    Ticket.findById(ticket_id, function (err, ticket) {
-        if (err) res.status(404).json({ message: err })
-        if (ticket) res.status(200).json({ status: ticket.is_booked })
-    })
-})
+// Update a ticket
+router.put('/ticket/:ticket_id', async (req, res) => {
+    const { ticket_id } = req.params;
+    const payload = req.body;
+    let passenger = null;
 
-// get list of all open tickets
-router.get('/tickets/open', (req, res) => {
-    Ticket.find({ is_booked: false }, (err, data) => {
-        if (err) res.status(404).json({ message: err })
-        if (data) res.status(200).json(data)
-    })
-})
+    try {
+        if ('passenger' in payload) {
+            passenger = payload.passenger;
+        }
 
-// get list of all closed tickets
-router.get('/tickets/closed', (req, res) => {
-    Ticket.find({ is_booked: true }, (err, data) => {
-        if (err) res.status(404).json({ message: err })
-        if (data) res.status(200).json(data)
-    })
-})
+        const ticket = await Ticket.findById(ticket_id);
+        if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+        if (payload.is_booked === true) {
+            const user_id = ticket.passenger;
+            await User.findByIdAndRemove(user_id);
+            ticket.is_booked = payload.is_booked;
+            const updatedTicket = await ticket.save();
+            res.status(200).json(updatedTicket);
+        } else if (payload.is_booked === false && passenger) {
+            const user = new User(passenger);
+            const savedUser = await user.save();
+            ticket.passenger = savedUser._id;
+            ticket.is_booked = payload.is_booked;
+            const updatedTicket = await ticket.save();
+            res.status(200).json(updatedTicket);
+        }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Edit user details for a ticket
+router.put('/user/:ticket_id', async (req, res) => {
+    const { ticket_id } = req.params;
+    const payload = req.body;
+
+    try {
+        const ticket = await Ticket.findById(ticket_id);
+        if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+        const user_id = ticket.passenger;
+        const user = await User.findById(user_id);
+        if (user) {
+            if ('name' in payload) user.name = payload.name;
+            if ('sex' in payload) user.sex = payload.sex;
+            if ('email' in payload) user.email = payload.email;
+            if ('phone' in payload) user.phone = payload.phone;
+            if ('age' in payload) user.age = payload.age;
+            const updatedUser = await user.save();
+            res.status(202).json(updatedUser);
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get the status of a ticket
+router.get('/ticket/:ticket_id', async (req, res) => {
+    const { ticket_id } = req.params;
+    try {
+        const ticket = await Ticket.findById(ticket_id);
+        if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+        res.status(200).json({ status: ticket.is_booked });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get list of all open tickets
+router.get('/tickets/open', async (req, res) => {
+    try {
+        const tickets = await Ticket.find({ is_booked: false });
+        res.status(200).json(tickets);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get list of all closed tickets
+router.get('/tickets/closed', async (req, res) => {
+    try {
+        const tickets = await Ticket.find({ is_booked: true });
+        res.status(200).json(tickets);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 // View person details of a ticket
-router.get('/ticket/details/:ticket_id', (req, res) => {
-    const { ticket_id } = req.params
-    Ticket.findById(ticket_id, function (err, ticket) {
-        if (err) res.status(404).json({ message: err })
-        if (ticket) {
-            User.findById(ticket.passenger, function (err, user) {
-                if (err) res.status(404).json({ message: err })
-                if (user) res.status(200).json(user)
-            })
+router.get('/ticket/details/:ticket_id', async (req, res) => {
+    const { ticket_id } = req.params;
+    try {
+        const ticket = await Ticket.findById(ticket_id);
+        if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+        const user = await User.findById(ticket.passenger);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.status(200).json(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+// search by tickets
+router.get('/search/tickets', async (req, res) => {
+    const { query } = req.query;
+    
+    try {
+        // Search for tickets based on seat number or other criteria
+        const tickets = await Ticket.find({
+            $or: [
+                { seat_number: { $regex: query, $options: 'i' } }, // case-insensitive search
+                { is_booked: { $regex: query, $options: 'i' } }
+            ]
+        });
+        
+        if (tickets.length === 0) {
+            return res.status(404).json({ message: 'No tickets found' });
         }
-    })
-})
+        
+        res.status(200).json(tickets);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
-router.post('/tickets/reset', (req, res) => {
 
-    if (!("username" in req.body) && !("password" in req.body)) {
-        res.status(400).json({ message: "username and password is needed in request body" })
+
+// Reset tickets
+router.post('/tickets/reset', async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: "username and password are needed in the request body" });
     }
 
-    const { username, password } = req.body
-
-    if (!(bcrypt.compareSync(password, process.env.PASSWORD_HASH))) {
-
-    }
-    if (!(username === process.env.USER)) {
-        res.status(400).json({ message: "username is incorrect" })
+    if (!bcrypt.compareSync(password, process.env.PASSWORD_HASH)) {
+        return res.status(400).json({ message: "Incorrect password" });
     }
 
-    Ticket.find({}, (err, data) => {
-        if (err) res.status(404).json({ message: err })
-        if (data) {
-            data.forEach(openTicket)
-            res.status(200).json({ message: "success" })
-        }
-    })
+    if (username !== process.env.USER) {
+        return res.status(400).json({ message: "Incorrect username" });
+    }
 
-})
+    try {
+        const tickets = await Ticket.find({});
+        tickets.forEach(openTicket); // Assuming openTicket is a function that processes tickets
+        res.status(200).json({ message: "success" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
-module.exports = router
+module.exports = router;

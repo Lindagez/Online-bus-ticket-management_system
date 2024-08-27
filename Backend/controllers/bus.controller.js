@@ -1,6 +1,6 @@
 const express = require("express");
 const BusModel = require("../models/bus.model");
-
+const router = express.Router();
 const app = express.Router();
 
 // Add a new bus
@@ -14,7 +14,7 @@ app.post("/addnew", async (req, res) => {
 });
 
 // Get all buses based on source and destination
-app.post("/getall", async (req, res) => {
+app.get("/getall", async (req, res) => {
   try {
     const { from, to } = req.body;
 
@@ -41,12 +41,46 @@ app.post("/getall", async (req, res) => {
 });
 
 // Get a single bus by ID
-app.post("/one", async (req, res) => {
+app.get("/one", async (req, res) => {
   try {
     let bus = await BusModel.findById(req.body.id);
     return res.send(bus);
   } catch (error) {
     return res.send(error.message);
+  }
+});
+
+app.get("/search", async (req, res) => {
+  const { companyname, route, date } = req.query;
+
+  try {
+    const query = {
+      $or: [{companyname: companyname}]
+    };
+
+    // // Add search criteria to query object
+    // if (companyname) {
+    //   query.companyname = { $regex: companyname, $options: "i" }; // case-insensitive search on company name
+    // }
+    // if (route) {
+    //   query.route = { $regex: route, $options: "i" }; // case-insensitive search on route
+    // }
+    // if (date) {
+    //   query.date = new Date(date); // exact match on date
+    // }
+    
+    console.log(query); 
+    // Search buses based on the query
+    const buses = await BusModel.find(query);
+    
+    if (buses.length === 0) {
+      return res.status(404).json({ message: "No buses found" });
+    }
+    
+    return res.status(200).json(buses);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
   }
 });
 

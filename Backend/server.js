@@ -19,7 +19,6 @@ app.use("/bus", busRouter);
 app.use("/ticket", ticketRouter);
 
 
-
 connect()
   .then(() => {
     console.log('Connected to MongoDB');
