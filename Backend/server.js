@@ -2,28 +2,27 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 8080;
+require('dotenv').config(); 
+// const connect = require('./configs');
+const busRouter = require("./controllers/bus.controller");
+const userRouter=require("./controllers/user.controller");
+const ticketRouter=require("./controllers/ticket");
 
 
-const busRouter = require("./src/controllers/bus.controller");
-const userRouter=require("./src/controllers/user.controller");
-
-
-const connect = require("./src/configs/db");
+const connect = require("./configs/db");
 
 app.use(cors());
 app.use(express.json());
 
 app.use("/user",userRouter)
 app.use("/bus", busRouter);
+app.use("/ticket", ticketRouter);
 
 
 
-
-app.listen(port, async () => {
-  try {
-    await connect();
-    console.log(`listening on http://localhost:8080`);
-  } catch (error) {
-    console.log(error.message);
-  }
-});
+connect()
+  .then(() => {
+    console.log('Connected to MongoDB');
+    app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+  })
+  .catch(err => console.error('Database connection error:', err));

@@ -1,13 +1,27 @@
+require('dotenv').config(); // Load environment variables from .env file
 
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 let connect = () => {
-  return mongoose.connect(
-    "",
-    { useNewUrlParser: true }
-  );
+  const dbHost = process.env.DB_HOST;
+  const dbPort = process.env.DB_PORT || '27017'; // Default port if not specified
+  const dbUser = process.env.DB_USER;
+  const dbPass = process.env.DB_PASS;
+  const dbName = process.env.DB_NAME;
+  const ACCESS_TOKEN  = process.env.ACCESS_TOKEN;
+  if (!dbHost || !dbPort || !dbName) {
+    throw new Error('Database host, port, or name is not defined.');
+  } 
+
+  // const uri = `mongodb+srv://raman:raman@cluster0.fm7rpoi.mongodb.net/ecom`;
+  const uri = "mongodb+srv://lidiyagez:0QuhKrfcg43jJXNg@cluster0.s9wnb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/bus"
+  console.log('DB Host:', process.env.DB_HOST);
+  console.log('DB Port:', process.env.DB_PORT);
+  
+  return mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 };
 
 module.exports = connect;
-
-
