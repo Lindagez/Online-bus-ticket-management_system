@@ -272,14 +272,16 @@ const stat = (req, res) => {
 //
 
 // Define routes
-router.post("/api/logout", logoutUser);
-router.get("/api/status", stat);
-router.get('/api/search/users', searchUser);
-router.post("/api/register", registerUser);
-router.post("/api/login", loginUser);
-router.get("/api/profile", auth, getUser);
-router.get("/api/:id", auth, getUserById);
-router.put("/api/change/:id", auth, updateUserPassword);
-router.delete("/api/delete/:id", auth, deleteUser);
 
-module.exports = router;
+
+module.exports = {
+  getUser,
+  getUserById,
+  registerUser,
+  loginUser,
+  logoutUser,
+  stat,
+  searchUser,
+  deleteUser,
+  updateUserPassword
+};

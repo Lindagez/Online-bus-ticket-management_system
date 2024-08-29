@@ -4,17 +4,17 @@ const router = express.Router();
 const app = express.Router();
 
 // Add a new bus
-app.post("/addnew", async (req, res) => {
+const addnewBus = async (req, res) => {
   try {
     let newbus = await BusModel.create({ ...req.body });
     return res.send(newbus);
   } catch (error) {
     return res.send(error.message);
   }
-});
+};
 
 // Get all buses based on source and destination
-app.get("/getall", async (req, res) => {
+const getallTckets  = async (req, res) => {
   try {
     const { from, to } = req.body;
 
@@ -38,19 +38,19 @@ app.get("/getall", async (req, res) => {
   } catch (error) {
     return res.status(500).send(error.message);
   }
-});
+};
 
 // Get a single bus by ID
-app.get("/one", async (req, res) => {
+const getBusbyid= async (req, res) => {
   try {
     let bus = await BusModel.findById(req.body.id);
     return res.send(bus);
   } catch (error) {
     return res.send(error.message);
   }
-});
+};
 
-app.get("/search", async (req, res) => {
+const searchBus= async (req, res) => {
   const { companyname, route, date } = req.query;
 
   try {
@@ -82,10 +82,10 @@ app.get("/search", async (req, res) => {
     console.log(err);
     res.status(500).json({ message: err.message });
   }
-});
+};
 
 // Delete a bus by ID
-app.delete("/delete/:id", async (req, res) => {
+const deleteBusbyid = async (req, res) => {
   try {
     let deletedBus = await BusModel.findByIdAndDelete(req.params.id);
     if (!deletedBus) {
@@ -95,10 +95,10 @@ app.delete("/delete/:id", async (req, res) => {
   } catch (error) {
     return res.send(error.message);
   }
-});
+};
 
 // Edit (update) a bus by ID
-app.put("/edit/:id", async (req, res) => {
+const updateBus= async (req, res) => {
   try {
     let updatedBus = await BusModel.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -110,6 +110,13 @@ app.put("/edit/:id", async (req, res) => {
   } catch (error) {
     return res.send(error.message);
   }
-});
+};
 
-module.exports = app;
+module.exports ={
+  addnewBus,
+  getallTckets,
+  getBusbyid,
+  searchBus,
+  deleteBusbyid,
+  updateBus,
+}

@@ -8,10 +8,9 @@ const bcrypt = require('bcrypt');
 const userValidation = validation.userValidation;
 const openTicket = validation.openTicket;
 
-// Define routes
+// Define the functions used in the routes
 
-// Create a ticket and update the bus model
-router.post('/ticket', async (req, res) => {
+const createTicket = async (req, res) => {
     try {
         const [result, data] = userValidation(req.body.passenger);
         if (!result) return res.status(404).json({ message: data });
@@ -39,10 +38,9 @@ router.post('/ticket', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: "Internal server error!" });
     }
-});
+};
 
-// Update a ticket
-router.put('/ticket/:ticket_id', async (req, res) => {
+const updateTicket = async (req, res) => {
     const { ticket_id } = req.params;
     const payload = req.body;
     let passenger = null;
@@ -72,10 +70,9 @@ router.put('/ticket/:ticket_id', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-// Edit user details for a ticket
-router.put('/user/:ticket_id', async (req, res) => {
+const editUserDetails = async (req, res) => {
     const { ticket_id } = req.params;
     const payload = req.body;
 
@@ -99,10 +96,9 @@ router.put('/user/:ticket_id', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-// Get the status of a ticket
-router.get('/ticket/:ticket_id', async (req, res) => {
+const getTicketStatus = async (req, res) => {
     const { ticket_id } = req.params;
     try {
         const ticket = await Ticket.findById(ticket_id);
@@ -111,30 +107,27 @@ router.get('/ticket/:ticket_id', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-// Get list of all open tickets
-router.get('/tickets/open', async (req, res) => {
+const getOpenTickets = async (req, res) => {
     try {
         const tickets = await Ticket.find({ is_booked: false });
         res.status(200).json(tickets);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-// Get list of all closed tickets
-router.get('/tickets/closed', async (req, res) => {
+const getClosedTickets = async (req, res) => {
     try {
         const tickets = await Ticket.find({ is_booked: true });
         res.status(200).json(tickets);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-// View person details of a ticket
-router.get('/ticket/details/:ticket_id', async (req, res) => {
+const viewPersonDetails = async (req, res) => {
     const { ticket_id } = req.params;
     try {
         const ticket = await Ticket.findById(ticket_id);
@@ -147,9 +140,9 @@ router.get('/ticket/details/:ticket_id', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
-// search by tickets
-router.get('/search/tickets', async (req, res) => {
+};
+
+const searchTickets = async (req, res) => {
     const { query } = req.query;
     
     try {
@@ -169,12 +162,9 @@ router.get('/search/tickets', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-
-
-// Reset tickets
-router.post('/tickets/reset', async (req, res) => {
+const resetTickets = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -196,6 +186,20 @@ router.post('/tickets/reset', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-});
+};
 
-module.exports = router;
+// Define routes at the end
+
+
+
+module.exports={
+    createTicket,
+    updateTicket,
+    editUserDetails,
+    getTicketStatus,
+    getOpenTickets,
+     getClosedTickets,
+     resetTickets ,
+     viewPersonDetails,
+     searchTickets
+}
