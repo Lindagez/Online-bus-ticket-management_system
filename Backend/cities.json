@@ -1,0 +1,31 @@
+[{
+  "_id": {
+    "$oid": "640082f21efcfc116f406aee"
+  },
+  "name": "Addis Abeba",
+  "state": "Jima"
+},{
+  "_id": {
+    "$oid": "640082f21efcfc116f406aef"
+  },
+  "name": "Addis Abeba",
+  "state": "Dredawa"
+},{
+  "_id": {
+    "$oid": "640082f21efcfc116f406af0"
+  },
+  "name": "Mojo",
+  "state": "Hawassa"
+},{
+  "_id": {
+    "$oid": "640082f21efcfc116f406af1"
+  },
+  "name": "Adama",
+  "state": "Harar"
+},{
+  "_id": {
+    "$oid": "640082f21efcfc116f406af2"
+  },
+  "name": "Addis Abeba",
+  "state": "Bahrdar"
+}]

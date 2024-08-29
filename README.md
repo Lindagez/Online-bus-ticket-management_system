@@ -1,1 +1,14 @@
-Online Bus Ticket Management System
+# Online Bus Ticket Management System
+
+## port 3000
+### .env file
+```
+DB_HOST=your_database_host
+DB_PORT=your_database_port
+DB_USER=your_database_user
+DB_PASS=your_database_password
+DB_NAME=your_database_name
+ACCESS_TOKEN=f937942bbca4f12180d64e5ca66e3d126aad5d3f072923ba31be24198ab40779714b9bbada9a0226886135111f696e3a04eb63baf0b4dc7579c0324c15dab337
+REFRESH_TOKEN=428c17fbe2d7e107f528a1dd54b4b805e4f7b927257516081d184f154b747bda4846a2f24487d4d75257382a76e0cc6dc4f048c3214e1b6c2de3d9b7dcefae40
+
+```
