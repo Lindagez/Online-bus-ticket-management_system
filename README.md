@@ -1,6 +1,6 @@
 # Online Bus Ticket Management System
 
-## port 3000
+## Port 3000
 ### .env file
 ```
 DB_HOST=your_database_host
