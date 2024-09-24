@@ -18,7 +18,7 @@ const initialBusCompanies = [
 
 const initialBookings = [
   { id: 1, busName: 'Selam Bus', fullName: 'Abel J', busNumber: 'E123', journeyDate: '2024-09-01', journeyTime: '10:00', seats: 2 },
-  { id: 2, busName: 'Goldean Bus', fullName: 'Solomon T.', busNumber: 'S456', journeyDate: '2024-09-01', journeyTime: '14:00', seats: 1 },
+  // { id: 2, busName: 'Goldean Bus', fullName: 'Solomon T.', busNumber: 'S456', journeyDate: '2024-09-01', journeyTime: '14:00', seats: 1 },
 ];
 const response = await getBuses();
 let initialBuses = [];    

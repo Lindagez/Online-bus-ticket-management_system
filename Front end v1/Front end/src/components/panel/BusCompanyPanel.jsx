@@ -30,7 +30,7 @@ const BusCompanyPanel = () => {
       status: 'Pending',
     },
     {
-      id: 2,
+      id: 3,
       name: 'Golden Bus',
       number: '25668',
       capacity: 60,
