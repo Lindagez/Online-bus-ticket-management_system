@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaUser, FaBus, FaList, FaMoneyBillWave } from 'react-icons/fa';
@@ -18,17 +18,11 @@ const initialBusCompanies = [
 
 const initialBookings = [
   { id: 1, busName: 'Selam Bus', fullName: 'Abel J', busNumber: 'E123', journeyDate: '2024-09-01', journeyTime: '10:00', seats: 2 },
-  // { id: 2, busName: 'Goldean Bus', fullName: 'Solomon T.', busNumber: 'S456', journeyDate: '2024-09-01', journeyTime: '14:00', seats: 1 },
 ];
-const response = await getBuses();
-let initialBuses = [];    
-if (response.data.success) {
-   initialBuses = response.data.bus
-}
 
 const initialPayments = [
-  { id: 1, passengerName: 'Solomon T.', passengerAccount: '1000471263162', companyName: 'Golden Bus', companyAccount: '12345',amount: '120' },
-  { id: 2, passengerName: 'Abel J', passengerAccount: '10004712234112', companyName: 'Selam Bus', companyAccount: '67890',amount: '200' },
+  { id: 1, passengerName: 'Solomon T.', passengerAccount: '1000471263162', companyName: 'Golden Bus', companyAccount: '12345', amount: '120' },
+  { id: 2, passengerName: 'Abel J', passengerAccount: '10004712234112', companyName: 'Selam Bus', companyAccount: '67890', amount: '200' },
 ];
 
 const AdminPanel = () => {
@@ -36,10 +30,25 @@ const AdminPanel = () => {
   const [passengers, setPassengers] = useState(initialPassengers);
   const [busCompanies, setBusCompanies] = useState(initialBusCompanies);
   const [bookings, setBookings] = useState(initialBookings);
-  const [buses, setBuses] = useState(initialBuses);
+  const [buses, setBuses] = useState([]);
   const [payments, setPayments] = useState(initialPayments);
-
   const navigate = useNavigate();
+
+  // Fetch buses inside useEffect
+  useEffect(() => {
+    const fetchBuses = async () => {
+      try {
+        const response = await getBuses();
+        if (response.data.success) {
+          setBuses(response.data.buses);
+        }
+      } catch (error) {
+        console.error('Failed to fetch buses:', error);
+      }
+    };
+
+    fetchBuses();
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -56,6 +65,7 @@ const AdminPanel = () => {
   const handleAdd = (type) => {
     console.log(`Add ${type}`);
   };
+
   const [showAddBus, setShowAddBus] = useState(false);
   const [busForm, setBusForm] = useState({
     name: '',
@@ -69,6 +79,7 @@ const AdminPanel = () => {
     price: '',
     status: '',
   });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBusForm((prevForm) => ({
