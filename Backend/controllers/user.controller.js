@@ -47,103 +47,73 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Define all APIs
 
-// Create/Register a new User
 const registerUser = async (req, res, next) => {
+  const { name, email, password, role } = req.body;
+
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10); // Hashing with a salt rounds of 10
+
+  const validRoles = ['admin', 'busCompany', 'passenger'];
+  const userRole = validRoles.includes(role) ? role : 'passenger';
+
   const user = new User({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
+    name,
+    email,
+    password: hashedPassword, // Store the hashed password
+    role: userRole,
   });
+
   try {
-    // console.log(req.body);
-    const { email, password } = req.body;
-
-    // if (!emailPattern.test(email)) {
-    //   return res.status(400).json({ error: 'Invalid email format' });
-    // }
-
-    // Validate password strength
-    // const isPasswordValid = schema.validate(password);
-    // if (!isPasswordValid) {
-    //     return res.status(400).json({ error: 'Weak password. Please provide a stronger password.' });
-    // }
-
-    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    // Save the new user to the MongoDB collection
     await user.save();
-
-    // Send confirmation email
-    // const mailOptions = {
-    //   from: 'yoszewdu@gmail.com',
-    //   to: email,
-    //   subject: 'Registration Confirmation',
-    //   text: 'Thank you for registering!'
-    // };
-
-    // transporter.sendMail(mailOptions, (error, info) => {
-    //   if (error) {
-    //     console.error('Error sending email:', error);
-    //   } else {
-    //     console.log('Email sent:', info.response);
-    //   }
-    // });
-
     res.status(200).json({ message: "User registered successfully !!!" });
   } catch (err) {
-    // res.status(404).json({ message: err.message });
     next(err);
   }
 };
 
-// Login a user
-const loginUser = async (req, res) => {
+
+
+
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
-  // Check if the user exists in the database
+
   try {
     if (!emailPattern.test(email)) {
       return res.status(400).json({ error: "Invalid email format" });
     }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User Not Found." });
     }
-    // Compare the password with the hashed password in the database
-    const isMatch = await bcrypt.compare(password, user.password);
 
-    // Check if the user's password matches the one in the database
+    console.log("User from DB:", user);
+    console.log("Provided Password:", password);
+    console.log("Stored Hashed Password:", user.password);
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password Match:", isMatch); // Log the result of the comparison
+
     if (!isMatch) {
       return res.status(401).json({ message: "Incorrect email or password" });
     }
 
-    // generate the token and sign that new user
-    const token = genToken(user._id);
-
+    const token = genToken(user._id, user.role);
     user.token = token;
 
-    //  //send the token to the frontend using cookies
-    //  res.cookie("Token", token, {
-    //    path: "/",
-    //    httpOnly: true,
-    //    sameSite: true,
-    //    secure: true
-    //  });
-    // Send the token to the client
-    // res.status(200).json({ message: 'Login successful', token });
-
     await user.save();
-    return res
-      .status(201)
-      .json({ message: "Logged in successfully !!!", token: token });
+    return res.status(201).json({ message: "Logged in successfully !!!", token });
   } catch (err) {
-    res.status(500).json({ message: err.message });
     next(err);
   }
 };
+
+
 
 // Logout a user
 const logoutUser = async (req, res) => {

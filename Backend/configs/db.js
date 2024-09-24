@@ -8,8 +8,10 @@ let connect = () => {
   const dbUser = process.env.DB_USER;
   const dbPass = process.env.DB_PASS;
   const dbName = process.env.DB_NAME;
-  const ACCESS_TOKEN  = process.env.ACCESS_TOKEN;
-  if (!dbHost || !dbPort || !dbName) {
+  const JWT_SECRET  = process.env.JWT_SECRET ;
+  const SECRET_KEY = 'mySuperSecretKey123!';
+
+  if (!dbHost || !dbPort || !dbName ) {
     throw new Error('Database host, port, or name is not defined.');
   } 
 

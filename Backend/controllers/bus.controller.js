@@ -51,11 +51,11 @@ const getBusbyid= async (req, res) => {
 };
 
 const searchBus= async (req, res) => {
-  const { companyname, route, date } = req.query;
+  const { name, route, date } = req.query;
 
   try {
     const query = {
-      $or: [{companyname: companyname}]
+      $or: [{name: name}]
     };
 
     // // Add search criteria to query object
@@ -83,6 +83,17 @@ const searchBus= async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// Get all buses
+const getAllBuses = async (req, res) => {
+  try {
+    let allBuses = await BusModel.find({});
+    return res.status(200).json(allBuses);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+};
+
+
 
 // Delete a bus by ID
 const deleteBusbyid = async (req, res) => {
@@ -119,4 +130,5 @@ module.exports ={
   searchBus,
   deleteBusbyid,
   updateBus,
+  getAllBuses,
 }

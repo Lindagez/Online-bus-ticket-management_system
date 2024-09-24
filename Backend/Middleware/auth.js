@@ -3,40 +3,29 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 
 
+
+// Protect bus company route
+
+
 // Autherizing the user
-const auth = async (req, res,next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+// const jwt = require('jsonwebtoken');
+const secret = process.env.JWT_SECRET; // Ensure you're using the correct secret
 
-    // Check if the token exists
-    try{
+const auth = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
 
-        if (!token) {
-            return res.status(401).json({ message: "Unauthorized, login first." });
-        }
-        
-        const validuser = await User.findOne({ token });
-        // const token = req.cookies.token;
-        if (!validuser) {
-            return res.status(401).json({ message: "Unauthorized, login first." });
-        }
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
 
-    // Verify the token
-    const ver = jwt.verify(token, ACCESS_TOKEN);
-   
-    const user  = await User.findById(ver.id).select("-password");
-    if (!user) {
-        res.status(401).json({ message: "User not found" });
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Token is invalid" });
     }
-
-    // Set the user
-    req.user = user;
-    req.body.addedBy = user._id;
+    req.user = decoded; // Store user info in request for later use
     next();
-    }catch(err) {
-        return res.status(403).json({ message: err.message });
-    }
-      
+  });
 };
+
 
 module.exports = auth;
