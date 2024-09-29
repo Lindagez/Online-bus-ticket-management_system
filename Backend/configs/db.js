@@ -16,7 +16,7 @@ let connect = () => {
   } 
 
   // const uri = `mongodb+srv://raman:raman@cluster0.fm7rpoi.mongodb.net/ecom`;
-  const uri = "mongodb+srv://lidiyagez:0QuhKrfcg43jJXNg@cluster0.s9wnb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/bus"
+  const uri = ""
   console.log('DB Host:', process.env.DB_HOST);
   console.log('DB Port:', process.env.DB_PORT);
   
