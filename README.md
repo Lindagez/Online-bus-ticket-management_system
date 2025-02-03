@@ -2,7 +2,7 @@
 # Bus Management System
 
 ## Overview
-The Bus Management System is a web application that allows users to manage bus routes, schedules, reservations, and bus information. It is built with React.js for the frontend and Node.js with Express.js for the backend. This system allows users to book bus tickets, view available routes, and admins to manage bus details and schedules.
+The Bus Management System is a web application developed during a 3-month internship program at **Eagleline System Technology**. It allows users to manage bus routes, schedules, reservations, and bus information. The system is built using **React.js** for the frontend and **Node.js** with the **Express.js** framework for the backend. Users can book bus tickets, view available routes, and admins can manage bus details and schedules.
 
 ## Technologies Used
 - **Frontend**: React.js, HTML5, CSS3, Bootstrap/TailwindCSS (for styling)
@@ -132,6 +132,3 @@ To contribute to the project:
 2. Create a new branch for your feature
 3. Implement your changes
 4. Submit a pull request with a description of the changes
-
-
-
